@@ -3,10 +3,6 @@
   hosts: localhost
   gather_facts: false
 
-  vars_prompt:
-    - name: vm_ip
-      prompt: "Dune VM IP address"
-      private: false
 
     - name: dune_package_source
       prompt: "Linux package source URL or local archive path (recommended for live self-host; leave blank only if using a Steam-accessible app ID)"
@@ -18,6 +14,10 @@
       private: false
       default: "4754530"
 
+  vars:
+    vm_ip: "10.10.4.201"
+    dune_package_source: ""
+    steam_app_id: "4754530"
   tasks:
     - name: Add Dune VM to temporary inventory
       ansible.builtin.add_host:
@@ -25,7 +25,7 @@
         groups: dune_vm
         ansible_host: "{{ vm_ip }}"
         ansible_user: dune
-        ansible_ssh_private_key_file: "{{ lookup('env', 'DUNE_SSH_PRIVATE_KEY_PATH') | default('~/.ssh/id_ed25519', true) }}"
+        ansible_ssh_private_key_file: "/root/.ssh/ansible_ed25519"
         ansible_python_interpreter: /usr/bin/python3
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
         dune_package_source: "{{ dune_package_source }}"

@@ -3,10 +3,6 @@
   hosts: localhost
   gather_facts: false
 
-  vars_prompt:
-    - name: vm_ip
-      prompt: "Dune VM IP address"
-      private: false
 
   tasks:
     - name: Add Dune VM to temporary inventory
@@ -15,7 +11,7 @@
         groups: dune_vm
         ansible_host: "{{ vm_ip }}"
         ansible_user: dune
-        ansible_ssh_private_key_file: "{{ lookup('env', 'DUNE_SSH_PRIVATE_KEY_PATH') | default('~/.ssh/id_ed25519', true) }}"
+        ansible_ssh_private_key_file: "/root/.ssh/ansible_ed25519"
         ansible_python_interpreter: /usr/bin/python3
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
@@ -25,6 +21,7 @@
   gather_facts: false
 
   vars:
+    vm_ip: "10.10.4.201"
     world_template_path: /home/dune/.dune/download/scripts/setup/templates/world-template.yaml
 
   tasks:

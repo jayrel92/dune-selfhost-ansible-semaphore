@@ -3,11 +3,6 @@
   hosts: proxmox
   gather_facts: false
 
-  vars_prompt:
-    - name: template_vmid
-      prompt: "Template VMID"
-      private: false
-      default: "200"
 
     - name: template_name
       prompt: "Template name"
@@ -25,6 +20,10 @@
       default: "vmbr0"
 
   vars:
+    template_vmid: "9000"
+    template_name: "ubuntu-2404-cloudinit"
+    proxmox_storage: "local-lvm"
+    proxmox_bridge: "vmbr1"
     ubuntu_cloud_image_url: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
     ubuntu_cloud_image_path: "/var/lib/vz/template/iso/noble-server-cloudimg-amd64.img"
 
