@@ -2,8 +2,6 @@
 - name: Register Dune VM host
   hosts: localhost
   gather_facts: false
-
-
   vars:
     vm_ip: "10.10.4.201"
   tasks:
@@ -16,12 +14,10 @@
         ansible_ssh_private_key_file: "/root/.ssh/ansible_ed25519"
         ansible_python_interpreter: /usr/bin/python3
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
 - name: Bootstrap Dune Kubernetes operators
   hosts: dune_vm
   become: true
   gather_facts: false
-
   tasks:
     - name: Copy Dune Kubernetes bootstrap script
       ansible.builtin.template:
@@ -30,17 +26,14 @@
         owner: root
         group: root
         mode: "0755"
-
     - name: Run Dune Kubernetes bootstrap script
       ansible.builtin.command:
         cmd: /root/dune-bootstrap-kubernetes.sh
       register: dune_k8s_bootstrap
       changed_when: true
-
     - name: Show bootstrap output
       ansible.builtin.debug:
         var: dune_k8s_bootstrap.stdout_lines
-
     - name: Wait for Funcom operators
       ansible.builtin.command: >
         kubectl wait --for=condition=Available

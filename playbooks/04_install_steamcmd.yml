@@ -2,8 +2,6 @@
 - name: Register Dune VM host
   hosts: localhost
   gather_facts: false
-
-
   vars:
     vm_ip: "10.10.4.201"
   tasks:
@@ -16,32 +14,26 @@
         ansible_ssh_private_key_file: "/root/.ssh/ansible_ed25519"
         ansible_python_interpreter: /usr/bin/python3
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
 - name: Install SteamCMD
   hosts: dune_vm
   become: true
-
   tasks:
-
     - name: Create SteamCMD temp directory
       ansible.builtin.file:
         path: /tmp/steamcmd
         state: directory
         mode: "0755"
-
     - name: Download SteamCMD
       ansible.builtin.get_url:
         url: https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
         dest: /tmp/steamcmd/steamcmd_linux.tar.gz
         mode: "0644"
-
     - name: Extract SteamCMD
       become_user: dune
       ansible.builtin.unarchive:
         src: /tmp/steamcmd/steamcmd_linux.tar.gz
         dest: /home/dune/Steam
         remote_src: true
-
     - name: Create Steam compatibility symlink root
       ansible.builtin.file:
         src: /home/dune/Steam
@@ -50,7 +42,6 @@
         force: true
         owner: dune
         group: dune
-
     - name: Create Steam compatibility symlink steam
       ansible.builtin.file:
         src: /home/dune/Steam
@@ -59,12 +50,10 @@
         force: true
         owner: dune
         group: dune
-
     - name: Remove existing SteamCMD compatibility command
       ansible.builtin.file:
         path: /usr/local/bin/steamcmd
         state: absent
-
     - name: Create SteamCMD command compatibility wrapper
       ansible.builtin.copy:
         dest: /usr/local/bin/steamcmd
@@ -74,14 +63,12 @@
         content: |
           #!/usr/bin/env bash
           exec /home/dune/Steam/steamcmd.sh "$@"
-
     - name: Run SteamCMD first launch
       become_user: dune
       ansible.builtin.command:
         cmd: /home/dune/Steam/steamcmd.sh +quit
       register: steamcmd_init
       changed_when: false
-
     - name: Show SteamCMD output
       ansible.builtin.debug:
         var: steamcmd_init.stdout_lines

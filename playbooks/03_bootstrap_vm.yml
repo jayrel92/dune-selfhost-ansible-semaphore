@@ -2,8 +2,6 @@
 - name: Register Dune VM host
   hosts: localhost
   gather_facts: false
-
-
   vars:
     vm_ip: "10.10.4.201"
   tasks:
@@ -16,32 +14,25 @@
         ansible_ssh_private_key_file: "/root/.ssh/ansible_ed25519"
         ansible_python_interpreter: /usr/bin/python3
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
 - name: Bootstrap Dune VM
   hosts: dune_vm
   become: true
   gather_facts: false
-
   tasks:
-
     - name: Wait for SSH
       ansible.builtin.wait_for_connection:
         timeout: 300
-
     - name: Gather facts after SSH becomes available
       ansible.builtin.setup:
-
     - name: Disable interactive apt prompts
       ansible.builtin.lineinfile:
         path: /etc/environment
         line: DEBIAN_FRONTEND=noninteractive
         create: true
-
     - name: Remove injected DNS search domains from cloud-init netplan
       ansible.builtin.shell: |
         python3 - <<'PY'
         from pathlib import Path
-
         changed = False
         for path in Path("/etc/netplan").glob("*.yaml"):
             lines = path.read_text(encoding="utf-8").splitlines()
@@ -57,27 +48,22 @@
                     continue
                 updated.append(line)
                 index += 1
-
             if updated != lines:
                 path.write_text("\n".join(updated) + "\n", encoding="utf-8")
-
         print("changed" if changed else "unchanged")
         PY
       args:
         executable: /bin/bash
       register: netplan_search_cleanup
       changed_when: netplan_search_cleanup.stdout.strip() == "changed"
-
     - name: Apply netplan after DNS search cleanup
       ansible.builtin.command: netplan apply
       when: netplan_search_cleanup.changed
-
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: yes
       environment:
         DEBIAN_FRONTEND: noninteractive
-
     - name: Install Dune prerequisites
       ansible.builtin.apt:
         name:
@@ -103,20 +89,17 @@
         state: present
       environment:
         DEBIAN_FRONTEND: noninteractive
-
     - name: Enable qemu guest agent
       ansible.builtin.systemd:
         name: qemu-guest-agent
         enabled: true
         state: started
-
     - name: Ensure dune service user exists
       ansible.builtin.user:
         name: dune
         shell: /bin/bash
         create_home: true
         state: present
-
     - name: Create Dune required directories
       ansible.builtin.file:
         path: "{{ item }}"
@@ -129,7 +112,6 @@
         - /home/dune/.dune/download
         - /home/dune/Steam
         - /home/dune/.steam
-
     - name: Allow dune user passwordless sudo for vendor scripts
       ansible.builtin.copy:
         dest: /etc/sudoers.d/dune-server
